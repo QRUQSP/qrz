@@ -1,0 +1,106 @@
+#
+# Description
+# -----------
+# This table stores the callsigns the operator would like to store additional details about.
+#
+# Fields
+# ------
+# id:                       The ID assigned to the item.
+# uuid:                     The Universal Unique ID.
+# station_id:               The station the item is attached to.
+#
+# callsign:                 The callsign of the operator you would like to store additional details for.
+#
+# status:                   The status of the packet.
+#
+#                               10 - Active
+#                               60 - Archived
+#
+# first:                    The first name of the operator.
+# middle:                   The middle name of the operator.
+# last:                     The last name of the operator.
+# fullname:                 The combined first, middle and last names.
+# nickname:                 The nickname if supplied for the operator, often their preferred first name.
+#
+# address1:                 The first address line of the callsigns location.
+# address2:                 The second address line of the callsigns location.
+# city:                     The city of the callsigns location.
+# province:                 The province or state of the callsigns location.
+# postal:                   The postal or zip code of the callsigns location.
+# country:                  The country of the callsigns location.
+# phone_number:             The primary number to use for voice phone calls.
+# sms_number:               The primary number to use for SMS messages.
+# email:                    Their email address.
+# 
+# license:                  The class or level of license they have.
+#
+# latitude:                 The latitude of their home location.
+# longitude:                The longitude of their home location.
+# gridsquare:               The gridsquare/maidenhead of their home location.
+# itu_zone:                 The ITU zone number.
+# cq_zone:                  The CQ zone number.
+#
+# qrz_com_number:           The number assigned to the operator record at qrz.com.
+# op_note:                  The operator note for special delivery notes.
+# route_through_callsign:   The operator callsign to route traffic through if not allowed to deliver direct.
+#
+# logbooks:                 The logbooks that the operator uses.
+#
+#                               0x01 - Postal
+#                               0x02 - Bureau
+#                               0x04 -
+#                               0x08 -
+#                               0x10 - QRUQSP **Future**
+#                               0x20 - LOTW, Logbook of the World
+#                               0x40 - EQSL, The Electronic QSL Card Centre
+#                               0x80 - QRZ, qrz.com logbook
+#
+# date_added:               The UTC date and time the record was added.
+# last_updated:             The UTC date and time the record was last updated.
+#
+create table qruqsp_qrz_callsigns (
+    id int not null auto_increment,
+    uuid char(36) not null,
+    station_id int not null,
+    callsign varchar(25) not null,
+    status tinyint unsigned not null,
+
+    first varchar(150) not null,
+    middle varchar(150) not null,
+    last varchar(150) not null,
+    fullname varchar(150) not null,
+    nickname varchar(150) not null,
+
+    shortbio varchar(250) not null,
+
+    phone_number varchar(50) not null,
+    sms_number varchar(50) not null,
+    email varchar(250) not null,
+
+    license varchar(50) not null,
+
+    address1 varchar(250) not null,
+    address2 varchar(250) not null,
+    city varchar(100) not null,
+    province varchar(100) not null,
+    postal varchar(10) not null,
+    country varchar(50) not null,
+
+    latitude decimal(18,12) not null,
+    longitude decimal(18,12) not null,
+    gridsquare char(6) not null,
+    itu_zone tinyint unsigned not null,
+    cq_zone tinyint unsigned not null,
+
+    qrz_com_number varchar(20) not null,
+    op_note varchar(150) not null,
+    route_through_callsign varchar(25) not null,
+
+    logbooks smallint not null,
+
+    date_added datetime not null,
+    last_updated datetime not null,
+    primary key (id),
+    unique index (uuid),
+    index sync (station_id, uuid, last_updated)
+) ENGINE='InnoDB', COMMENT='v1.01';

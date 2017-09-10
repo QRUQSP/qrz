@@ -1,0 +1,35 @@
+#
+# Description
+# -----------
+# This table stores the note entries, based by date on when the entry was added.
+#
+# Fields
+# ------
+# id:                       The ID assigned to the item.
+# uuid:                     The Universal Unique ID.
+# station_id:               The station the item is attached to.
+#
+# callsign_id:              The callsign for the note.
+#
+# note:                     The text of the note
+#
+# note_date:                The UTC date and time for the note, can be different from date_added.
+#
+# date_added:               The UTC date and time the record was added.
+# last_updated:             The UTC date and time the record was last updated.
+#
+create table qruqsp_qrz_notes (
+    id int not null auto_increment,
+    uuid char(36) not null,
+    station_id int not null,
+
+    callsign_id int not null,
+    note varchar(10000) not null,
+    note_date datetime not null,
+
+    date_added datetime not null,
+    last_updated datetime not null,
+    primary key (id),
+    unique index (uuid),
+    index sync (station_id, uuid, last_updated)
+) ENGINE='InnoDB', COMMENT='v1.01';
