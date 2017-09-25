@@ -17,6 +17,8 @@ function qruqsp_qrz_callsignList($q) {
     qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
     $rc = qruqsp_core_prepareArgs($q, 'no', array(
         'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+        'groups'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Groups'),
+        'group_permalink'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Group Permalink'),
         ));
     if( $rc['stat'] != 'ok' ) {
         return $rc;
@@ -33,11 +35,22 @@ function qruqsp_qrz_callsignList($q) {
     }
 
     //
+    // Load the maps
+    //
+    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'maps');
+    $rc = qruqsp_qrz_maps($q);
+    if( $rc['stat'] != 'ok' ) {
+        return $rc;
+    }
+    $maps = $rc['maps'];
+
+    //
     // Get the list of callsigns
     //
     $strsql = "SELECT qruqsp_qrz_callsigns.id, "
         . "qruqsp_qrz_callsigns.callsign, "
         . "qruqsp_qrz_callsigns.status, "
+        . "qruqsp_qrz_callsigns.status AS status_text, "
         . "qruqsp_qrz_callsigns.first, "
         . "qruqsp_qrz_callsigns.middle, "
         . "qruqsp_qrz_callsigns.last, "
@@ -47,7 +60,6 @@ function qruqsp_qrz_callsignList($q) {
         . "qruqsp_qrz_callsigns.phone_number, "
         . "qruqsp_qrz_callsigns.sms_number, "
         . "qruqsp_qrz_callsigns.email, "
-        . "qruqsp_qrz_callsigns.license, "
         . "qruqsp_qrz_callsigns.latitude, "
         . "qruqsp_qrz_callsigns.longitude, "
         . "qruqsp_qrz_callsigns.gridsquare, "
@@ -57,14 +69,33 @@ function qruqsp_qrz_callsignList($q) {
         . "qruqsp_qrz_callsigns.op_note, "
         . "qruqsp_qrz_callsigns.route_through_callsign, "
         . "qruqsp_qrz_callsigns.logbooks "
-        . "FROM qruqsp_qrz_callsigns "
-        . "WHERE qruqsp_qrz_callsigns.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
-        . "AND qruqsp_qrz_callsigns.status < 60 "
         . "";
+    if( isset($args['group_permalink']) && $args['group_permalink'] != '' ) {
+        $strsql .= "FROM qruqsp_qrz_tags "
+            . "LEFT JOIN qruqsp_qrz_callsigns ON ("
+                . "qruqsp_qrz_tags.callsign_id = qruqsp_qrz_callsigns.id "
+                . "AND qruqsp_qrz_callsigns.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+            . ") "
+            . "WHERE qruqsp_qrz_tags.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+            . "AND qruqsp_qrz_tags.tag_type = 10 "
+            . "AND qruqsp_qrz_tags.permalink = '" . qruqsp_core_dbQuote($q, $args['group_permalink']) . "' "
+            . "";
+    } else {
+        $strsql .= "FROM qruqsp_qrz_callsigns "
+            . "WHERE qruqsp_qrz_callsigns.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+            . "AND qruqsp_qrz_callsigns.status < 60 "
+            . "";
+    }
     qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
     $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.qrz', array(
         array('container'=>'callsigns', 'fname'=>'id', 
-            'fields'=>array('id', 'callsign', 'status', 'first', 'middle', 'last', 'fullname', 'nickname', 'shortbio', 'phone_number', 'sms_number', 'email', 'license', 'latitude', 'longitude', 'gridsquare', 'itu_zone', 'cq_zone', 'qrz_com_number', 'op_note', 'route_through_callsign', 'logbooks')),
+            'fields'=>array('id', 'callsign', 'status', 'status_text', 
+                'first', 'middle', 'last', 'fullname', 'nickname', 'shortbio', 
+                'phone_number', 'sms_number', 'email', 
+                'latitude', 'longitude', 'gridsquare', 'itu_zone', 'cq_zone', 'qrz_com_number', 
+                'op_note', 'route_through_callsign', 'logbooks'),
+            'maps'=>array('status_text'=>$maps['callsign']['status']),
+            ),
         ));
     if( $rc['stat'] != 'ok' ) {
         return $rc;
@@ -80,6 +111,23 @@ function qruqsp_qrz_callsignList($q) {
         $callsign_ids = array();
     }
 
-    return array('stat'=>'ok', 'callsigns'=>$callsigns, 'nplist'=>$callsign_ids);
+    $rsp = array('stat'=>'ok', 'callsigns'=>$callsigns, 'nplist'=>$callsign_ids);
+
+    if( isset($args['groups']) && $args['groups'] == 'yes' ) {
+        $strsql = "SELECT DISTINCT tag_name, permalink "
+            . "FROM qruqsp_qrz_tags "
+            . "WHERE station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+            . "ORDER BY tag_name "
+            . "";
+        $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.qrz', array(
+            array('container'=>'groups', 'fname'=>'permalink', 'fields'=>array('permalink', 'tag_name')),
+            ));
+        if( $rc['stat'] != 'ok' ) {
+            return $rc;
+        }
+        $rsp['groups'] = isset($rc['groups']) ? $rc['groups'] : array();
+    }
+    
+    return $rsp;
 }
 ?>

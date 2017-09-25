@@ -36,7 +36,6 @@ function qruqsp_qrz_objects(&$q) {
             'phone_number'=>array('name'=>'Phone Number', 'default'=>''),
             'sms_number'=>array('name'=>'SMS Number', 'default'=>''),
             'email'=>array('name'=>'Email', 'default'=>''),
-            'license'=>array('name'=>'License', 'default'=>''),
             'latitude'=>array('name'=>'Latitude', 'default'=>''),
             'longitude'=>array('name'=>'Longitude', 'default'=>''),
             'gridsquare'=>array('name'=>'Grid Square', 'default'=>''),
@@ -47,7 +46,7 @@ function qruqsp_qrz_objects(&$q) {
             'route_through_callsign'=>array('name'=>'Routing Callsign', 'default'=>''),
             'logbooks'=>array('name'=>'Logbooks', 'default'=>'0'),
             ),
-        'history_table'=>'qruqsp_tnc_history',
+        'history_table'=>'qruqsp_qrz_history',
         );
     $objects['note'] = array(
         'name'=>'Note',
@@ -73,6 +72,31 @@ function qruqsp_qrz_objects(&$q) {
             'tag_type'=>array('name'=>'Type'),
             'tag_name'=>array('name'=>'Name'),
             'permalink'=>array('name'=>'Permalink'),
+            ),
+        'history_table'=>'qruqsp_qrz_history',
+        );
+    $objects['license'] = array(
+        'name'=>'License',
+        'o_name'=>'license',
+        'o_container'=>'licenses',
+        'sync'=>'yes',
+        'table'=>'qruqsp_qrz_licenses',
+        'fields'=>array(
+            'name'=>array('name'=>'License name'),
+            'permalink'=>array('name'=>'License name', 'default'=>''),
+            'notes'=>array('name'=>'Notes', 'default'=>''),
+            ),
+        'history_table'=>'qruqsp_qrz_history',
+        );
+    $objects['callsignlicense'] = array(
+        'name'=>'Callsign License',
+        'o_name'=>'callsignlicense',
+        'o_container'=>'callsignlicenses',
+        'sync'=>'yes',
+        'table'=>'qruqsp_qrz_callsign_licenses',
+        'fields'=>array(
+            'callsign_id'=>array('name'=>'Callsign', 'ref'=>'qruqsp.qrz.callsign'),
+            'license_id'=>array('name'=>'License', 'ref'=>'qruqsp.qrz.license'),
             ),
         'history_table'=>'qruqsp_qrz_history',
         );

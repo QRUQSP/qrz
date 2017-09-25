@@ -34,7 +34,6 @@ function qruqsp_qrz_callsignAdd(&$q) {
         'phone_number'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Phone Number'),
         'sms_number'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'SMS Number'),
         'email'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Email'),
-        'license'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'License'),
         'latitude'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Latitude'),
         'longitude'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Longitude'),
         'gridsquare'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Grid Square'),
@@ -44,6 +43,8 @@ function qruqsp_qrz_callsignAdd(&$q) {
         'op_note'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Op Note'),
         'route_through_callsign'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Routing Callsign'),
         'logbooks'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Logbooks'),
+        'licenses'=>array('required'=>'no', 'blank'=>'yes', 'type'=>'idlist', 'name'=>'Licenses'),
+        'groups'=>array('required'=>'no', 'blank'=>'yes', 'type'=>'list', 'delimiter'=>'::', 'name'=>'Groups'),
         ));
     if( $rc['stat'] != 'ok' ) {
         return $rc;
@@ -81,6 +82,30 @@ function qruqsp_qrz_callsignAdd(&$q) {
         return $rc;
     }
     $callsign_id = $rc['id'];
+
+    //
+    // Update the licenses for a callsign
+    //
+    if( isset($args['licenses']) ) {
+        qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'callsignLicensesUpdate');
+        $rc = qruqsp_qrz_callsignLicensesUpdate($q, $args['station_id'], $callsign_id, $args['licenses']);
+        if( $rc['stat'] != 'ok' ) {
+            qruqsp_core_dbTransactionRollback($q, 'qruqsp.qrz');
+            return $rc;
+        }
+    }
+
+    //
+    // Update the groups
+    //
+    if( isset($args['groups']) ) {
+        qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'tagsUpdate');
+        $rc = qruqsp_core_tagsUpdate($q, 'qruqsp.qrz.tag', $args['station_id'], 'callsign_id', $callsign_id, 10, $args['groups']);
+        if( $rc['stat'] != 'ok' ) {
+            qruqsp_core_dbTransactionRollback($q, 'qruqsp.qrz');
+            return $rc;
+        }
+    }
 
     //
     // Commit the transaction

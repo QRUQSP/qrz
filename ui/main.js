@@ -5,19 +5,23 @@ function qruqsp_qrz_main() {
     //
     // The panel to list the callsign
     //
-    this.menu = new Q.panel('callsign', 'qruqsp_qrz_main', 'menu', 'mc', 'medium', 'sectioned', 'qruqsp.qrz.main.menu');
+    this.menu = new Q.panel('callsign', 'qruqsp_qrz_main', 'menu', 'mc', 'medium narrowaside', 'sectioned', 'qruqsp.qrz.main.menu');
     this.menu.data = {};
     this.menu.nplist = [];
+    this.menu.group_permalink = '';
     this.menu.sections = {
-        'search':{'label':'', 'type':'livesearchgrid', 'livesearchcols':2,
+        'groups':{'label':'Groups', 'type':'simplegrid', 'num_cols':1, 'aside':'yes',
+            'noData':'No groups found',
+            },
+        'search':{'label':'', 'type':'livesearchgrid', 'livesearchcols':3,
             'cellClasses':[''],
             'hint':'Search callsign',
             'noData':'No callsign found',
             },
-        'callsigns':{'label':'Callsign', 'type':'simplegrid', 'num_cols':2,
+        'callsigns':{'label':'Callsign', 'type':'simplegrid', 'num_cols':3,
             'noData':'No callsign',
             'addTxt':'Add Callsign',
-            'addFn':'Q.qruqsp_qrz_main.callsign.open(\'Q.qruqsp_qrz_main.menu.open();\',0,null);'
+            'addFn':'Q.qruqsp_qrz_main.edit.open(\'Q.qruqsp_qrz_main.menu.open();\',0,null);'
             },
     }
     this.menu.liveSearchCb = function(s, i, v) {
@@ -31,6 +35,7 @@ function qruqsp_qrz_main() {
         switch(j) {
             case 0: return d.callsign;
             case 1: return (d.nickname != '' ? d.nickname : d.first);
+            case 2: return d.status_text;
         }
     }
     this.menu.liveSearchResultRowFn = function(s, f, i, j, d) {
@@ -41,16 +46,33 @@ function qruqsp_qrz_main() {
             switch(j) {
                 case 0: return d.callsign;
                 case 1: return (d.nickname != '' ? d.nickname : d.first);
+                case 2: return d.status_text;
             }
         }
+        if( s == 'groups' ) {
+            return d.tag_name;
+        }
+    }
+    this.menu.rowClass = function(s, i, d) {
+        if( s == 'groups' ) {
+            if( this.group_permalink != '' && this.group_permalink == d.permalink ) {
+                return 'highlight';
+            }
+        }
+        return '';
     }
     this.menu.rowFn = function(s, i, d) {
         if( s == 'callsigns' ) {
             return 'Q.qruqsp_qrz_main.callsign.open(\'Q.qruqsp_qrz_main.menu.open();\',\'' + d.id + '\',Q.qruqsp_qrz_main.callsign.nplist);';
         }
+        if( s == 'groups' ) {
+            return 'Q.qruqsp_qrz_main.menu.open(null,\'' + d.permalink + '\');';
+        }
+        return '';
     }
-    this.menu.open = function(cb) {
-        Q.api.getJSONCb('qruqsp.qrz.callsignList', {'station_id':Q.curStationID}, function(rsp) {
+    this.menu.open = function(cb, gp) {
+        if( gp != null ) { this.group_permalink = gp; }
+        Q.api.getJSONCb('qruqsp.qrz.callsignList', {'station_id':Q.curStationID, 'groups':'yes', 'group_permalink':this.group_permalink}, function(rsp) {
             if( rsp.stat != 'ok' ) {
                 Q.api.err(rsp);
                 return false;
@@ -76,7 +98,8 @@ function qruqsp_qrz_main() {
             'fullname':{'label':'Full Name'},
 //            'nickname':{'label':'Nickname'},
             'license':{'label':'License'},
-            'status':{'label':'Status'},
+            'status_text':{'label':'Status'},
+            'groups_display':{'label':'Groups'},
             'address':{'label':'Address', 'visible':function() {return (Q.qruqsp_qrz_main.callsign.data.address != null && Q.qruqsp_qrz_main.callsign.data.address != '' ? 'yes' : 'no');}},
             }},
         'notes':{'label':'Notes', 'type':'simplegrid', 'num_cols':2,
@@ -123,14 +146,14 @@ function qruqsp_qrz_main() {
     //
     // The panel to edit Callsign
     //
-    this.edit = new Q.panel('Callsign', 'qruqsp_qrz_main', 'callsign', 'mc', 'medium mediumaside', 'sectioned', 'qruqsp.qrz.main.callsign');
+    this.edit = new Q.panel('Callsign', 'qruqsp_qrz_main', 'edit', 'mc', 'medium mediumaside', 'sectioned', 'qruqsp.qrz.main.edit');
     this.edit.data = null;
     this.edit.callsign_id = 0;
     this.edit.nplist = [];
     this.edit.sections = {
         'general':{'label':'', 'aside':'yes', 'fields':{
             'callsign':{'label':'Callsign', 'type':'text'},
-            'license':{'label':'License', 'type':'text'},
+//            'license':{'label':'License', 'type':'text'},
             'status':{'label':'Status', 'type':'toggle', 'toggles':{'10':'Active', '60':'Archived'}},
             'first':{'label':'First', 'type':'text'},
             'middle':{'label':'Middle', 'type':'text'},
@@ -138,15 +161,24 @@ function qruqsp_qrz_main() {
 //            'fullname':{'label':'Full Name', 'type':'text'},
             'nickname':{'label':'Nickname', 'type':'text'},
             }},
+        '_licenses':{'label':'Licenses', 'aside':'yes', 
+            'addTxt':'Add License',
+            'addFn':'Q.qruqsp_qrz_main.edit.save("Q.qruqsp_qrz_main.license.open(\'Q.qruqsp_qrz_main.edit.open();\',0);");',
+            'fields':{
+                'licenses':{'label':'', 'hidelabel':'yes', 'type':'idlist', 'list':[], 'hint':'Enter a new license'},
+            }},
         '_bio':{'label':'Short Bio', 'aside':'yes', 'fields':{
             'shortbio':{'label':'', 'hidelabel':'yes', 'type':'textarea', 'size':'small'},
         }},
+        '_groups':{'label':'Groups', 'aside':'yes', 'fields':{
+            'groups':{'label':'', 'hidelabel':'yes', 'type':'tags', 'tags':[], 'hint':'Enter a new group'},
+            }},
         'contact':{'label':'', 'aside':'yes', 'fields':{
             'phone_number':{'label':'Phone Number', 'type':'text'},
             'sms_number':{'label':'SMS Number', 'type':'text'},
             'email':{'label':'Email', 'type':'text'},
             }},
-        'location':{'label':'', 'aside':'yes', 'fields':{
+        'location':{'label':'', 'fields':{
             'address1':{'label':'Address', 'type':'text'},
             'address2':{'label':'', 'type':'text'},
             'city':{'label':'City', 'type':'text'},
@@ -171,8 +203,6 @@ function qruqsp_qrz_main() {
                 '7':{'name':'eQSL'},
                 '8':{'name':'QRZ'},
                 }},
-            }},
-        'tags':{'label':'Groups', 'fields':{
             }},
 //        'notes':{'label':'Notes', 'type':'simplegrid', 'num_cols':2,
 //            'addTxt':'Add Notes',
@@ -201,13 +231,20 @@ function qruqsp_qrz_main() {
     this.edit.open = function(cb, cid, list) {
         if( cid != null ) { this.callsign_id = cid; }
         if( list != null ) { this.nplist = list; }
-        Q.api.getJSONCb('qruqsp.qrz.callsignGet', {'station_id':Q.curStationID, 'callsign_id':this.callsign_id}, function(rsp) {
+        Q.api.getJSONCb('qruqsp.qrz.callsignGet', {'station_id':Q.curStationID, 'callsign_id':this.callsign_id, 'licenses':'yes'}, function(rsp) {
             if( rsp.stat != 'ok' ) {
                 Q.api.err(rsp);
                 return false;
             }
             var p = Q.qruqsp_qrz_main.edit;
             p.data = rsp.callsign;
+            p.sections._groups.fields.groups.tags = [];
+            if( rsp.groups != null ) {
+                for(i in rsp.groups) {
+                    p.sections._groups.fields.groups.tags.push(rsp.groups[i].name);
+                }
+            }
+            p.sections._licenses.fields.licenses.list = rsp.licenses;
             p.refresh();
             p.show(cb);
         });
@@ -365,6 +402,101 @@ function qruqsp_qrz_main() {
     this.note.addClose('Cancel');
     this.note.addButton('next', 'Next');
     this.note.addLeftButton('prev', 'Prev');
+
+    //
+    // The panel to edit License
+    //
+    this.license = new Q.panel('License', 'qruqsp_qrz_main', 'license', 'mc', 'medium', 'sectioned', 'qruqsp.qrz.main.license');
+    this.license.data = null;
+    this.license.license_id = 0;
+    this.license.nplist = [];
+    this.license.sections = {
+        'general':{'label':'', 'fields':{
+            'name':{'label':'License name', 'type':'text'},
+            }},
+        '_notes':{'label':'Notes', 'fields':{
+            'notes':{'label':'', 'hidelabel':'yes', 'type':'textarea', 'size':'large'},
+            }},
+        '_buttons':{'label':'', 'buttons':{
+            'save':{'label':'Save', 'fn':'Q.qruqsp_qrz_main.license.save();'},
+            'delete':{'label':'Delete', 
+                'visible':function() {return Q.qruqsp_qrz_main.license.license_id > 0 ? 'yes' : 'no'; },
+                'fn':'Q.qruqsp_qrz_main.license.remove();'},
+            }},
+        };
+    this.license.fieldValue = function(s, i, d) { return this.data[i]; }
+    this.license.fieldHistoryArgs = function(s, i) {
+        return {'method':'qruqsp.qrz.licenseHistory', 'args':{'station_id':Q.curStationID, 'license_id':this.license_id, 'field':i}};
+    }
+    this.license.open = function(cb, lid, list) {
+        if( lid != null ) { this.license_id = lid; }
+        if( list != null ) { this.nplist = list; }
+        Q.api.getJSONCb('qruqsp.qrz.licenseGet', {'station_id':Q.curStationID, 'license_id':this.license_id}, function(rsp) {
+            if( rsp.stat != 'ok' ) {
+                Q.api.err(rsp);
+                return false;
+            }
+            var p = Q.qruqsp_qrz_main.license;
+            p.data = rsp.license;
+            p.refresh();
+            p.show(cb);
+        });
+    }
+    this.license.save = function(cb) {
+        if( cb == null ) { cb = 'Q.qruqsp_qrz_main.license.close();'; }
+        if( !this.checkForm() ) { return false; }
+        if( this.license_id > 0 ) {
+            var c = this.serializeForm('no');
+            if( c != '' ) {
+                Q.api.postJSONCb('qruqsp.qrz.licenseUpdate', {'station_id':Q.curStationID, 'license_id':this.license_id}, c, function(rsp) {
+                    if( rsp.stat != 'ok' ) {
+                        Q.api.err(rsp);
+                        return false;
+                    }
+                    eval(cb);
+                });
+            } else {
+                eval(cb);
+            }
+        } else {
+            var c = this.serializeForm('yes');
+            Q.api.postJSONCb('qruqsp.qrz.licenseAdd', {'station_id':Q.curStationID}, c, function(rsp) {
+                if( rsp.stat != 'ok' ) {
+                    Q.api.err(rsp);
+                    return false;
+                }
+                Q.qruqsp_qrz_main.license.license_id = rsp.id;
+                eval(cb);
+            });
+        }
+    }
+    this.license.remove = function() {
+        if( confirm('Are you sure you want to remove license?') ) {
+            Q.api.getJSONCb('qruqsp.qrz.licenseDelete', {'station_id':Q.curStationID, 'license_id':this.license_id}, function(rsp) {
+                if( rsp.stat != 'ok' ) {
+                    Q.api.err(rsp);
+                    return false;
+                }
+                Q.qruqsp_qrz_main.license.close();
+            });
+        }
+    }
+    this.license.nextButtonFn = function() {
+        if( this.nplist != null && this.nplist.indexOf('' + this.license_id) < (this.nplist.length - 1) ) {
+            return 'Q.qruqsp_qrz_main.license.save(\'Q.qruqsp_qrz_main.license.open(null,' + this.nplist[this.nplist.indexOf('' + this.license_id) + 1] + ');\');';
+        }
+        return null;
+    }
+    this.license.prevButtonFn = function() {
+        if( this.nplist != null && this.nplist.indexOf('' + this.license_id) > 0 ) {
+            return 'Q.qruqsp_qrz_main.license.save(\'Q.qruqsp_qrz_main.license.open(null,' + this.nplist[this.nplist.indexOf('' + this.license_id) - 1] + ');\');';
+        }
+        return null;
+    }
+    this.license.addButton('save', 'Save', 'Q.qruqsp_qrz_main.license.save();');
+    this.license.addClose('Cancel');
+    this.license.addButton('next', 'Next');
+    this.license.addLeftButton('prev', 'Prev');
 
     //
     // Start the app

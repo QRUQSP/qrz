@@ -13,8 +13,9 @@ function qruqsp_qrz_maps(&$q) {
     // Build the maps object
     //
     $maps = array();
-    $maps['object'] = array('field'=>array(
-        'int'=>'text',
+    $maps['callsign'] = array('status'=>array(
+        '10'=>'Active',
+        '60'=>'Archive',
     ));
 
     //

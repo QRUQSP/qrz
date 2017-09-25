@@ -1,0 +1,6 @@
+#
+# Remove the column license, no longer used as it has been
+# switched to use the licenses table.
+#
+ALTER TABLE qruqsp_qrz_callsigns DROP COLUMN license;
+ALTER TABLE qruqsp_qrz_callsigns COMMENT='v1.02';

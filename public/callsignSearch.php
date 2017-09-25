@@ -37,11 +37,22 @@ function qruqsp_qrz_callsignSearch($q) {
     }
 
     //
+    // Load the maps
+    //
+    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'maps');
+    $rc = qruqsp_qrz_maps($q);
+    if( $rc['stat'] != 'ok' ) {
+        return $rc;
+    }
+    $maps = $rc['maps'];
+
+    //
     // Get the list of callsigns
     //
     $strsql = "SELECT qruqsp_qrz_callsigns.id, "
         . "qruqsp_qrz_callsigns.callsign, "
         . "qruqsp_qrz_callsigns.status, "
+        . "qruqsp_qrz_callsigns.status AS status_text, "
         . "qruqsp_qrz_callsigns.first, "
         . "qruqsp_qrz_callsigns.middle, "
         . "qruqsp_qrz_callsigns.last, "
@@ -51,7 +62,6 @@ function qruqsp_qrz_callsignSearch($q) {
         . "qruqsp_qrz_callsigns.phone_number, "
         . "qruqsp_qrz_callsigns.sms_number, "
         . "qruqsp_qrz_callsigns.email, "
-        . "qruqsp_qrz_callsigns.license, "
         . "qruqsp_qrz_callsigns.latitude, "
         . "qruqsp_qrz_callsigns.longitude, "
         . "qruqsp_qrz_callsigns.gridsquare, "
@@ -86,7 +96,13 @@ function qruqsp_qrz_callsignSearch($q) {
     qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
     $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.qrz', array(
         array('container'=>'callsigns', 'fname'=>'id', 
-            'fields'=>array('id', 'callsign', 'status', 'first', 'middle', 'last', 'fullname', 'nickname', 'shortbio', 'phone_number', 'sms_number', 'email', 'license', 'latitude', 'longitude', 'gridsquare', 'itu_zone', 'cq_zone', 'qrz_com_number', 'op_note', 'route_through_callsign', 'logbooks')),
+            'fields'=>array('id', 'callsign', 'status', 'status_text',
+                'first', 'middle', 'last', 'fullname', 'nickname', 'shortbio', 
+                'phone_number', 'sms_number', 'email',
+                'latitude', 'longitude', 'gridsquare', 'itu_zone', 'cq_zone', 'qrz_com_number', 
+                'op_note', 'route_through_callsign', 'logbooks'),
+            'maps'=>array('status_text'=>$maps['callsign']['status']),
+            ),
         ));
     if( $rc['stat'] != 'ok' ) {
         return $rc;

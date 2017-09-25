@@ -103,4 +103,4 @@ create table qruqsp_qrz_callsigns (
     primary key (id),
     unique index (uuid),
     index sync (station_id, uuid, last_updated)
-) ENGINE='InnoDB', COMMENT='v1.01';
+) ENGINE='InnoDB', COMMENT='v1.02';
