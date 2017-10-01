@@ -102,6 +102,8 @@ function qruqsp_qrz_callsignUpdate(&$q) {
             qruqsp_core_dbTransactionRollback($q, 'qruqsp.qrz');
             return $rc;
         }
+        qruqsp_core_dbAddModuleHistory($q, 'qruqsp.qrz', 'qruqsp_qrz_history', $args['station_id'],
+            2, 'qruqsp_qrz_callsigns', $args['callsign_id'], 'groups', implode('::', $args['groups']));
     }
 
     //

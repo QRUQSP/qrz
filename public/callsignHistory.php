@@ -38,6 +38,16 @@ function qruqsp_qrz_callsignHistory($q) {
         return $rc;
     }
 
+    //
+    // Check if the requested field is the groups field
+    //
+    if( $args['field'] == 'groups' ) {
+        qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbGetModuleHistoryTags');
+        return qruqsp_core_dbGetModuleHistoryTags($q, 'qruqsp.qrz',
+            'qruqsp_qrz_history', $args['station_id'],
+            'qruqsp_qrz_tags', $args['callsign_id'], 'tag_name', 'callsign_id', 10);
+    }
+
     qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbGetModuleHistory');
     return qruqsp_core_dbGetModuleHistory($q, 'qruqsp.qrz', 'qruqsp_qrz_history', $args['station_id'], 'qruqsp_qrz_callsigns', $args['callsign_id'], $args['field']);
 }
