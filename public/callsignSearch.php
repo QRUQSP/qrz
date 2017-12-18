@@ -2,23 +2,23 @@
 //
 // Description
 // -----------
-// This method searchs for a Callsigns for a station.
+// This method searchs for a Callsigns for a tenant.
 //
 // Arguments
 // ---------
 // api_key:
 // auth_token:
-// station_id:         The ID of the station to get Callsign for.
+// tnid:               The ID of the tenant to get Callsign for.
 // start_needle:       The search string to search for.
 // limit:              The maximum number of entries to return.
 //
-function qruqsp_qrz_callsignSearch($q) {
+function qruqsp_qrz_callsignSearch($ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'start_needle'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Search String'),
         'limit'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Limit'),
         ));
@@ -28,10 +28,10 @@ function qruqsp_qrz_callsignSearch($q) {
     $args = $rc['args'];
 
     //
-    // Check access to station_id as owner, or sys admin.
+    // Check access to tnid as owner, or sys admin.
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'checkAccess');
-    $rc = qruqsp_qrz_checkAccess($q, $args['station_id'], 'qruqsp.qrz.callsignSearch');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'checkAccess');
+    $rc = qruqsp_qrz_checkAccess($ciniki, $args['tnid'], 'qruqsp.qrz.callsignSearch');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -39,8 +39,8 @@ function qruqsp_qrz_callsignSearch($q) {
     //
     // Load the maps
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'maps');
-    $rc = qruqsp_qrz_maps($q);
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'maps');
+    $rc = qruqsp_qrz_maps($ciniki);
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -72,29 +72,29 @@ function qruqsp_qrz_callsignSearch($q) {
         . "qruqsp_qrz_callsigns.route_through_callsign, "
         . "qruqsp_qrz_callsigns.logbooks "
         . "FROM qruqsp_qrz_callsigns "
-        . "WHERE qruqsp_qrz_callsigns.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+        . "WHERE qruqsp_qrz_callsigns.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
         . "AND ("
-            . "callsign LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR callsign LIKE '% " . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR first LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR first LIKE '% " . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR last LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR last LIKE '% " . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR nickname LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR nickname LIKE '% " . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR phone_number LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR phone_number LIKE '% " . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR sms_number LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR sms_number LIKE '% " . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
+            . "callsign LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR callsign LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR first LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR first LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR last LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR last LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR nickname LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR nickname LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR phone_number LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR phone_number LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR sms_number LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR sms_number LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
         . ") "
         . "";
     if( isset($args['limit']) && is_numeric($args['limit']) && $args['limit'] > 0 ) {
-        $strsql .= "LIMIT " . qruqsp_core_dbQuote($q, $args['limit']) . " ";
+        $strsql .= "LIMIT " . ciniki_core_dbQuote($ciniki, $args['limit']) . " ";
     } else {
         $strsql .= "LIMIT 25 ";
     }
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
-    $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.qrz', array(
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryArrayTree');
+    $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'qruqsp.qrz', array(
         array('container'=>'callsigns', 'fname'=>'id', 
             'fields'=>array('id', 'callsign', 'status', 'status_text',
                 'first', 'middle', 'last', 'fullname', 'nickname', 'shortbio', 

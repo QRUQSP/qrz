@@ -5,7 +5,7 @@ function qruqsp_qrz_main() {
     //
     // The panel to list the callsign
     //
-    this.menu = new Q.panel('callsign', 'qruqsp_qrz_main', 'menu', 'mc', 'medium narrowaside', 'sectioned', 'qruqsp.qrz.main.menu');
+    this.menu = new M.panel('callsign', 'qruqsp_qrz_main', 'menu', 'mc', 'medium narrowaside', 'sectioned', 'qruqsp.qrz.main.menu');
     this.menu.data = {};
     this.menu.nplist = [];
     this.menu.group_permalink = '';
@@ -21,13 +21,13 @@ function qruqsp_qrz_main() {
         'callsigns':{'label':'Callsign', 'type':'simplegrid', 'num_cols':3,
             'noData':'No callsign',
             'addTxt':'Add Callsign',
-            'addFn':'Q.qruqsp_qrz_main.edit.open(\'Q.qruqsp_qrz_main.menu.open();\',0,null);'
+            'addFn':'M.qruqsp_qrz_main.edit.open(\'M.qruqsp_qrz_main.menu.open();\',0,null);'
             },
     }
     this.menu.liveSearchCb = function(s, i, v) {
         if( s == 'search' && v != '' ) {
-            Q.api.getJSONBgCb('qruqsp.qrz.callsignSearch', {'station_id':Q.curStationID, 'start_needle':v, 'limit':'25'}, function(rsp) {
-                Q.qruqsp_qrz_main.menu.liveSearchShow('search',null,Q.gE(Q.qruqsp_qrz_main.menu.panelUID + '_' + s), rsp.callsigns);
+            M.api.getJSONBgCb('qruqsp.qrz.callsignSearch', {'tnid':M.curTenantID, 'start_needle':v, 'limit':'25'}, function(rsp) {
+                M.qruqsp_qrz_main.menu.liveSearchShow('search',null,M.gE(M.qruqsp_qrz_main.menu.panelUID + '_' + s), rsp.callsigns);
                 });
         }
     }
@@ -39,7 +39,7 @@ function qruqsp_qrz_main() {
         }
     }
     this.menu.liveSearchResultRowFn = function(s, f, i, j, d) {
-        return 'Q.qruqsp_qrz_main.callsign.open(\'Q.qruqsp_qrz_main.menu.open();\',\'' + d.id + '\');';
+        return 'M.qruqsp_qrz_main.callsign.open(\'M.qruqsp_qrz_main.menu.open();\',\'' + d.id + '\');';
     }
     this.menu.cellValue = function(s, i, j, d) {
         if( s == 'callsigns' ) {
@@ -63,21 +63,21 @@ function qruqsp_qrz_main() {
     }
     this.menu.rowFn = function(s, i, d) {
         if( s == 'callsigns' ) {
-            return 'Q.qruqsp_qrz_main.callsign.open(\'Q.qruqsp_qrz_main.menu.open();\',\'' + d.id + '\',Q.qruqsp_qrz_main.callsign.nplist);';
+            return 'M.qruqsp_qrz_main.callsign.open(\'M.qruqsp_qrz_main.menu.open();\',\'' + d.id + '\',M.qruqsp_qrz_main.callsign.nplist);';
         }
         if( s == 'groups' ) {
-            return 'Q.qruqsp_qrz_main.menu.open(null,\'' + d.permalink + '\');';
+            return 'M.qruqsp_qrz_main.menu.open(null,\'' + d.permalink + '\');';
         }
         return '';
     }
     this.menu.open = function(cb, gp) {
         if( gp != null ) { this.group_permalink = gp; }
-        Q.api.getJSONCb('qruqsp.qrz.callsignList', {'station_id':Q.curStationID, 'groups':'yes', 'group_permalink':this.group_permalink}, function(rsp) {
+        M.api.getJSONCb('qruqsp.qrz.callsignList', {'tnid':M.curTenantID, 'groups':'yes', 'group_permalink':this.group_permalink}, function(rsp) {
             if( rsp.stat != 'ok' ) {
-                Q.api.err(rsp);
+                M.api.err(rsp);
                 return false;
             }
-            var p = Q.qruqsp_qrz_main.menu;
+            var p = M.qruqsp_qrz_main.menu;
             p.data = rsp;
             p.nplist = (rsp.nplist != null ? rsp.nplist : null);
             p.refresh();
@@ -89,7 +89,7 @@ function qruqsp_qrz_main() {
     //
     // The panel to display Callsign
     //
-    this.callsign = new Q.panel('Callsign', 'qruqsp_qrz_main', 'callsign', 'mc', 'medium mediumaside', 'sectioned', 'qruqsp.qrz.main.callsign');
+    this.callsign = new M.panel('Callsign', 'qruqsp_qrz_main', 'callsign', 'mc', 'medium mediumaside', 'sectioned', 'qruqsp.qrz.main.callsign');
     this.callsign.data = null;
     this.callsign.callsign_id = 0;
     this.callsign.sections = {
@@ -100,11 +100,11 @@ function qruqsp_qrz_main() {
             'license':{'label':'License'},
             'status_text':{'label':'Status'},
             'groups_display':{'label':'Groups'},
-            'address':{'label':'Address', 'visible':function() {return (Q.qruqsp_qrz_main.callsign.data.address != null && Q.qruqsp_qrz_main.callsign.data.address != '' ? 'yes' : 'no');}},
+            'address':{'label':'Address', 'visible':function() {return (M.qruqsp_qrz_main.callsign.data.address != null && M.qruqsp_qrz_main.callsign.data.address != '' ? 'yes' : 'no');}},
             }},
         'notes':{'label':'Notes', 'type':'simplegrid', 'num_cols':2,
             'addTxt':'Add Notes',
-            'addFn':'Q.qruqsp_qrz_main.note.open(\'Q.qruqsp_qrz_main.edit.open();\',0,Q.qruqsp_qrz_main.edit.callsign_id);',
+            'addFn':'M.qruqsp_qrz_main.note.open(\'M.qruqsp_qrz_main.edit.open();\',0,M.qruqsp_qrz_main.edit.callsign_id);',
             },
     }
     this.callsign.listLabel = function(s, i, d) {
@@ -123,30 +123,30 @@ function qruqsp_qrz_main() {
         }
     }
     this.callsign.rowFn = function(s, i, d) {
-        return 'Q.qruqsp_qrz_main.note.open(\'Q.qruqsp_qrz_main.callsign.open();\',\'' + d.id + '\');';
+        return 'M.qruqsp_qrz_main.note.open(\'M.qruqsp_qrz_main.callsign.open();\',\'' + d.id + '\');';
     }
     this.callsign.open = function(cb, cid, list) {
         if( cid != null ) { this.callsign_id = cid; }
         if( list != null ) { this.nplist = list; }
-        Q.api.getJSONCb('qruqsp.qrz.callsignGet', {'station_id':Q.curStationID, 'callsign_id':this.callsign_id}, function(rsp) {
+        M.api.getJSONCb('qruqsp.qrz.callsignGet', {'tnid':M.curTenantID, 'callsign_id':this.callsign_id}, function(rsp) {
             if( rsp.stat != 'ok' ) {
-                Q.api.err(rsp);
+                M.api.err(rsp);
                 return false;
             }
-            var p = Q.qruqsp_qrz_main.callsign;
+            var p = M.qruqsp_qrz_main.callsign;
             p.data = rsp.callsign;
             p.refresh();
             p.show(cb);
         });
     }
-    this.callsign.addButton('edit', 'Edit', 'Q.qruqsp_qrz_main.edit.open(\'Q.qruqsp_qrz_main.callsign.open();\',Q.qruqsp_qrz_main.callsign.callsign_id);');
+    this.callsign.addButton('edit', 'Edit', 'M.qruqsp_qrz_main.edit.open(\'M.qruqsp_qrz_main.callsign.open();\',M.qruqsp_qrz_main.callsign.callsign_id);');
     this.callsign.addClose('Back');
 
 
     //
     // The panel to edit Callsign
     //
-    this.edit = new Q.panel('Callsign', 'qruqsp_qrz_main', 'edit', 'mc', 'medium mediumaside', 'sectioned', 'qruqsp.qrz.main.edit');
+    this.edit = new M.panel('Callsign', 'qruqsp_qrz_main', 'edit', 'mc', 'medium mediumaside', 'sectioned', 'qruqsp.qrz.main.edit');
     this.edit.data = null;
     this.edit.callsign_id = 0;
     this.edit.nplist = [];
@@ -163,7 +163,7 @@ function qruqsp_qrz_main() {
             }},
         '_licenses':{'label':'Licenses', 'aside':'yes', 
             'addTxt':'Add License',
-            'addFn':'Q.qruqsp_qrz_main.edit.save("Q.qruqsp_qrz_main.license.open(\'Q.qruqsp_qrz_main.edit.open();\',0);");',
+            'addFn':'M.qruqsp_qrz_main.edit.save("M.qruqsp_qrz_main.license.open(\'M.qruqsp_qrz_main.edit.open();\',0);");',
             'fields':{
                 'licenses':{'label':'', 'hidelabel':'yes', 'type':'idlist', 'list':[], 'hint':'Enter a new license'},
             }},
@@ -206,18 +206,18 @@ function qruqsp_qrz_main() {
             }},
 //        'notes':{'label':'Notes', 'type':'simplegrid', 'num_cols':2,
 //            'addTxt':'Add Notes',
-//            'addFn':'Q.qruqsp_qrz_main.edit.save("Q.qruqsp_qrz_main.note.open(\'Q.qruqsp_qrz_main.edit.open();\',0,Q.qruqsp_qrz_main.edit.callsign_id);");',
+//            'addFn':'M.qruqsp_qrz_main.edit.save("M.qruqsp_qrz_main.note.open(\'M.qruqsp_qrz_main.edit.open();\',0,M.qruqsp_qrz_main.edit.callsign_id);");',
 //            },
         '_buttons':{'label':'', 'buttons':{
-            'save':{'label':'Save', 'fn':'Q.qruqsp_qrz_main.edit.save();'},
+            'save':{'label':'Save', 'fn':'M.qruqsp_qrz_main.edit.save();'},
             'delete':{'label':'Delete', 
-                'visible':function() {return Q.qruqsp_qrz_main.edit.callsign_id > 0 ? 'yes' : 'no'; },
-                'fn':'Q.qruqsp_qrz_main.edit.remove();'},
+                'visible':function() {return M.qruqsp_qrz_main.edit.callsign_id > 0 ? 'yes' : 'no'; },
+                'fn':'M.qruqsp_qrz_main.edit.remove();'},
             }},
         };
     this.edit.fieldValue = function(s, i, d) { return this.data[i]; }
     this.edit.fieldHistoryArgs = function(s, i) {
-        return {'method':'qruqsp.qrz.callsignHistory', 'args':{'station_id':Q.curStationID, 'callsign_id':this.callsign_id, 'field':i}};
+        return {'method':'qruqsp.qrz.callsignHistory', 'args':{'tnid':M.curTenantID, 'callsign_id':this.callsign_id, 'field':i}};
     }
     this.edit.cellValue = function(s, i, j, d) {
         switch(j) {
@@ -226,22 +226,22 @@ function qruqsp_qrz_main() {
         }
     }
     this.edit.rowFn = function(s, i, d) {
-        return 'Q.qruqsp_qrz_main.edit.save("Q.qruqsp_qrz_main.note.open(\'Q.qruqsp_qrz_main.edit.open();\',\'' + d.id + '\');");';
+        return 'M.qruqsp_qrz_main.edit.save("M.qruqsp_qrz_main.note.open(\'M.qruqsp_qrz_main.edit.open();\',\'' + d.id + '\');");';
     }
     this.edit.open = function(cb, cid, list) {
         if( cid != null ) { this.callsign_id = cid; }
         if( list != null ) { this.nplist = list; }
-        Q.api.getJSONCb('qruqsp.qrz.callsignGet', {'station_id':Q.curStationID, 'callsign_id':this.callsign_id, 'licenses':'yes'}, function(rsp) {
+        M.api.getJSONCb('qruqsp.qrz.callsignGet', {'tnid':M.curTenantID, 'callsign_id':this.callsign_id, 'licenses':'yes'}, function(rsp) {
             if( rsp.stat != 'ok' ) {
-                Q.api.err(rsp);
+                M.api.err(rsp);
                 return false;
             }
-            var p = Q.qruqsp_qrz_main.edit;
+            var p = M.qruqsp_qrz_main.edit;
             p.data = rsp.callsign;
             p.sections._groups.fields.groups.tags = [];
             if( rsp.groups != null ) {
                 for(i in rsp.groups) {
-                    p.sections._groups.fields.groups.tags.push(rsp.groups[i].name);
+                    p.sections._groups.fields.groups.tags.push(rsp.groups[i].tag.name);
                 }
             }
             p.sections._licenses.fields.licenses.list = rsp.licenses;
@@ -250,14 +250,14 @@ function qruqsp_qrz_main() {
         });
     }
     this.edit.save = function(cb) {
-        if( cb == null ) { cb = 'Q.qruqsp_qrz_main.edit.close();'; }
+        if( cb == null ) { cb = 'M.qruqsp_qrz_main.edit.close();'; }
         if( !this.checkForm() ) { return false; }
         if( this.callsign_id > 0 ) {
             var c = this.serializeForm('no');
             if( c != '' ) {
-                Q.api.postJSONCb('qruqsp.qrz.callsignUpdate', {'station_id':Q.curStationID, 'callsign_id':this.callsign_id}, c, function(rsp) {
+                M.api.postJSONCb('qruqsp.qrz.callsignUpdate', {'tnid':M.curTenantID, 'callsign_id':this.callsign_id}, c, function(rsp) {
                     if( rsp.stat != 'ok' ) {
-                        Q.api.err(rsp);
+                        M.api.err(rsp);
                         return false;
                     }
                     eval(cb);
@@ -267,40 +267,40 @@ function qruqsp_qrz_main() {
             }
         } else {
             var c = this.serializeForm('yes');
-            Q.api.postJSONCb('qruqsp.qrz.callsignAdd', {'station_id':Q.curStationID}, c, function(rsp) {
+            M.api.postJSONCb('qruqsp.qrz.callsignAdd', {'tnid':M.curTenantID}, c, function(rsp) {
                 if( rsp.stat != 'ok' ) {
-                    Q.api.err(rsp);
+                    M.api.err(rsp);
                     return false;
                 }
-                Q.qruqsp_qrz_main.edit.callsign_id = rsp.id;
+                M.qruqsp_qrz_main.edit.callsign_id = rsp.id;
                 eval(cb);
             });
         }
     }
     this.edit.remove = function() {
         if( confirm('Are you sure you want to remove callsign?') ) {
-            Q.api.getJSONCb('qruqsp.qrz.callsignDelete', {'station_id':Q.curStationID, 'callsign_id':this.callsign_id}, function(rsp) {
+            M.api.getJSONCb('qruqsp.qrz.callsignDelete', {'tnid':M.curTenantID, 'callsign_id':this.callsign_id}, function(rsp) {
                 if( rsp.stat != 'ok' ) {
-                    Q.api.err(rsp);
+                    M.api.err(rsp);
                     return false;
                 }
-                Q.qruqsp_qrz_main.edit.close();
+                M.qruqsp_qrz_main.edit.close();
             });
         }
     }
     this.edit.nextButtonFn = function() {
         if( this.nplist != null && this.nplist.indexOf('' + this.callsign_id) < (this.nplist.length - 1) ) {
-            return 'Q.qruqsp_qrz_main.edit.save(\'Q.qruqsp_qrz_main.edit.open(null,' + this.nplist[this.nplist.indexOf('' + this.callsign_id) + 1] + ');\');';
+            return 'M.qruqsp_qrz_main.edit.save(\'M.qruqsp_qrz_main.edit.open(null,' + this.nplist[this.nplist.indexOf('' + this.callsign_id) + 1] + ');\');';
         }
         return null;
     }
     this.edit.prevButtonFn = function() {
         if( this.nplist != null && this.nplist.indexOf('' + this.callsign_id) > 0 ) {
-            return 'Q.qruqsp_qrz_main.edit.save(\'Q.qruqsp_qrz_main.edit.open(null,' + this.nplist[this.nplist.indexOf('' + this.callsign_id) - 1] + ');\');';
+            return 'M.qruqsp_qrz_main.edit.save(\'M.qruqsp_qrz_main.edit.open(null,' + this.nplist[this.nplist.indexOf('' + this.callsign_id) - 1] + ');\');';
         }
         return null;
     }
-    this.edit.addButton('save', 'Save', 'Q.qruqsp_qrz_main.edit.save();');
+    this.edit.addButton('save', 'Save', 'M.qruqsp_qrz_main.edit.save();');
     this.edit.addClose('Cancel');
     this.edit.addButton('next', 'Next');
     this.edit.addLeftButton('prev', 'Prev');
@@ -308,7 +308,7 @@ function qruqsp_qrz_main() {
     //
     // The panel to edit Note
     //
-    this.note = new Q.panel('Note', 'qruqsp_qrz_main', 'note', 'mc', 'medium', 'sectioned', 'qruqsp.qrz.main.note');
+    this.note = new M.panel('Note', 'qruqsp_qrz_main', 'note', 'mc', 'medium', 'sectioned', 'qruqsp.qrz.main.note');
     this.note.data = null;
     this.note.note_id = 0;
     this.note.callsign_id = 0;
@@ -322,40 +322,40 @@ function qruqsp_qrz_main() {
             'note':{'label':'', 'hidelabel':'yes', 'type':'textarea'},
             }},
         '_buttons':{'label':'', 'buttons':{
-            'save':{'label':'Save', 'fn':'Q.qruqsp_qrz_main.note.save();'},
+            'save':{'label':'Save', 'fn':'M.qruqsp_qrz_main.note.save();'},
             'delete':{'label':'Delete', 
-                'visible':function() {return Q.qruqsp_qrz_main.note.note_id > 0 ? 'yes' : 'no'; },
-                'fn':'Q.qruqsp_qrz_main.note.remove();'},
+                'visible':function() {return M.qruqsp_qrz_main.note.note_id > 0 ? 'yes' : 'no'; },
+                'fn':'M.qruqsp_qrz_main.note.remove();'},
             }},
         };
     this.note.fieldValue = function(s, i, d) { return this.data[i]; }
     this.note.fieldHistoryArgs = function(s, i) {
-        return {'method':'qruqsp.qrz.noteHistory', 'args':{'station_id':Q.curStationID, 'note_id':this.note_id, 'field':i}};
+        return {'method':'qruqsp.qrz.noteHistory', 'args':{'tnid':M.curTenantID, 'note_id':this.note_id, 'field':i}};
     }
     this.note.open = function(cb, nid, cid, list) {
         if( nid != null ) { this.note_id = nid; }
         if( cid != null ) { this.callsign_id = cid; }
         if( list != null ) { this.nplist = list; }
-        Q.api.getJSONCb('qruqsp.qrz.noteGet', {'station_id':Q.curStationID, 'note_id':this.note_id}, function(rsp) {
+        M.api.getJSONCb('qruqsp.qrz.noteGet', {'tnid':M.curTenantID, 'note_id':this.note_id}, function(rsp) {
             if( rsp.stat != 'ok' ) {
-                Q.api.err(rsp);
+                M.api.err(rsp);
                 return false;
             }
-            var p = Q.qruqsp_qrz_main.note;
+            var p = M.qruqsp_qrz_main.note;
             p.data = rsp.note;
             p.refresh();
             p.show(cb);
         });
     }
     this.note.save = function(cb) {
-        if( cb == null ) { cb = 'Q.qruqsp_qrz_main.note.close();'; }
+        if( cb == null ) { cb = 'M.qruqsp_qrz_main.note.close();'; }
         if( !this.checkForm() ) { return false; }
         if( this.note_id > 0 ) {
             var c = this.serializeForm('no');
             if( c != '' ) {
-                Q.api.postJSONCb('qruqsp.qrz.noteUpdate', {'station_id':Q.curStationID, 'note_id':this.note_id}, c, function(rsp) {
+                M.api.postJSONCb('qruqsp.qrz.noteUpdate', {'tnid':M.curTenantID, 'note_id':this.note_id}, c, function(rsp) {
                     if( rsp.stat != 'ok' ) {
-                        Q.api.err(rsp);
+                        M.api.err(rsp);
                         return false;
                     }
                     eval(cb);
@@ -365,40 +365,40 @@ function qruqsp_qrz_main() {
             }
         } else {
             var c = this.serializeForm('yes');
-            Q.api.postJSONCb('qruqsp.qrz.noteAdd', {'station_id':Q.curStationID, 'callsign_id':this.callsign_id}, c, function(rsp) {
+            M.api.postJSONCb('qruqsp.qrz.noteAdd', {'tnid':M.curTenantID, 'callsign_id':this.callsign_id}, c, function(rsp) {
                 if( rsp.stat != 'ok' ) {
-                    Q.api.err(rsp);
+                    M.api.err(rsp);
                     return false;
                 }
-                Q.qruqsp_qrz_main.note.note_id = rsp.id;
+                M.qruqsp_qrz_main.note.note_id = rsp.id;
                 eval(cb);
             });
         }
     }
     this.note.remove = function() {
         if( confirm('Are you sure you want to remove note?') ) {
-            Q.api.getJSONCb('qruqsp.qrz.noteDelete', {'station_id':Q.curStationID, 'note_id':this.note_id}, function(rsp) {
+            M.api.getJSONCb('qruqsp.qrz.noteDelete', {'tnid':M.curTenantID, 'note_id':this.note_id}, function(rsp) {
                 if( rsp.stat != 'ok' ) {
-                    Q.api.err(rsp);
+                    M.api.err(rsp);
                     return false;
                 }
-                Q.qruqsp_qrz_main.note.close();
+                M.qruqsp_qrz_main.note.close();
             });
         }
     }
     this.note.nextButtonFn = function() {
         if( this.nplist != null && this.nplist.indexOf('' + this.note_id) < (this.nplist.length - 1) ) {
-            return 'Q.qruqsp_qrz_main.note.save(\'Q.qruqsp_qrz_main.note.open(null,' + this.nplist[this.nplist.indexOf('' + this.note_id) + 1] + ');\');';
+            return 'M.qruqsp_qrz_main.note.save(\'M.qruqsp_qrz_main.note.open(null,' + this.nplist[this.nplist.indexOf('' + this.note_id) + 1] + ');\');';
         }
         return null;
     }
     this.note.prevButtonFn = function() {
         if( this.nplist != null && this.nplist.indexOf('' + this.note_id) > 0 ) {
-            return 'Q.qruqsp_qrz_main.note.save(\'Q.qruqsp_qrz_main.note.open(null,' + this.nplist[this.nplist.indexOf('' + this.note_id) - 1] + ');\');';
+            return 'M.qruqsp_qrz_main.note.save(\'M.qruqsp_qrz_main.note.open(null,' + this.nplist[this.nplist.indexOf('' + this.note_id) - 1] + ');\');';
         }
         return null;
     }
-    this.note.addButton('save', 'Save', 'Q.qruqsp_qrz_main.note.save();');
+    this.note.addButton('save', 'Save', 'M.qruqsp_qrz_main.note.save();');
     this.note.addClose('Cancel');
     this.note.addButton('next', 'Next');
     this.note.addLeftButton('prev', 'Prev');
@@ -406,7 +406,7 @@ function qruqsp_qrz_main() {
     //
     // The panel to edit License
     //
-    this.license = new Q.panel('License', 'qruqsp_qrz_main', 'license', 'mc', 'medium', 'sectioned', 'qruqsp.qrz.main.license');
+    this.license = new M.panel('License', 'qruqsp_qrz_main', 'license', 'mc', 'medium', 'sectioned', 'qruqsp.qrz.main.license');
     this.license.data = null;
     this.license.license_id = 0;
     this.license.nplist = [];
@@ -418,39 +418,39 @@ function qruqsp_qrz_main() {
             'notes':{'label':'', 'hidelabel':'yes', 'type':'textarea', 'size':'large'},
             }},
         '_buttons':{'label':'', 'buttons':{
-            'save':{'label':'Save', 'fn':'Q.qruqsp_qrz_main.license.save();'},
+            'save':{'label':'Save', 'fn':'M.qruqsp_qrz_main.license.save();'},
             'delete':{'label':'Delete', 
-                'visible':function() {return Q.qruqsp_qrz_main.license.license_id > 0 ? 'yes' : 'no'; },
-                'fn':'Q.qruqsp_qrz_main.license.remove();'},
+                'visible':function() {return M.qruqsp_qrz_main.license.license_id > 0 ? 'yes' : 'no'; },
+                'fn':'M.qruqsp_qrz_main.license.remove();'},
             }},
         };
     this.license.fieldValue = function(s, i, d) { return this.data[i]; }
     this.license.fieldHistoryArgs = function(s, i) {
-        return {'method':'qruqsp.qrz.licenseHistory', 'args':{'station_id':Q.curStationID, 'license_id':this.license_id, 'field':i}};
+        return {'method':'qruqsp.qrz.licenseHistory', 'args':{'tnid':M.curTenantID, 'license_id':this.license_id, 'field':i}};
     }
     this.license.open = function(cb, lid, list) {
         if( lid != null ) { this.license_id = lid; }
         if( list != null ) { this.nplist = list; }
-        Q.api.getJSONCb('qruqsp.qrz.licenseGet', {'station_id':Q.curStationID, 'license_id':this.license_id}, function(rsp) {
+        M.api.getJSONCb('qruqsp.qrz.licenseGet', {'tnid':M.curTenantID, 'license_id':this.license_id}, function(rsp) {
             if( rsp.stat != 'ok' ) {
-                Q.api.err(rsp);
+                M.api.err(rsp);
                 return false;
             }
-            var p = Q.qruqsp_qrz_main.license;
+            var p = M.qruqsp_qrz_main.license;
             p.data = rsp.license;
             p.refresh();
             p.show(cb);
         });
     }
     this.license.save = function(cb) {
-        if( cb == null ) { cb = 'Q.qruqsp_qrz_main.license.close();'; }
+        if( cb == null ) { cb = 'M.qruqsp_qrz_main.license.close();'; }
         if( !this.checkForm() ) { return false; }
         if( this.license_id > 0 ) {
             var c = this.serializeForm('no');
             if( c != '' ) {
-                Q.api.postJSONCb('qruqsp.qrz.licenseUpdate', {'station_id':Q.curStationID, 'license_id':this.license_id}, c, function(rsp) {
+                M.api.postJSONCb('qruqsp.qrz.licenseUpdate', {'tnid':M.curTenantID, 'license_id':this.license_id}, c, function(rsp) {
                     if( rsp.stat != 'ok' ) {
-                        Q.api.err(rsp);
+                        M.api.err(rsp);
                         return false;
                     }
                     eval(cb);
@@ -460,40 +460,40 @@ function qruqsp_qrz_main() {
             }
         } else {
             var c = this.serializeForm('yes');
-            Q.api.postJSONCb('qruqsp.qrz.licenseAdd', {'station_id':Q.curStationID}, c, function(rsp) {
+            M.api.postJSONCb('qruqsp.qrz.licenseAdd', {'tnid':M.curTenantID}, c, function(rsp) {
                 if( rsp.stat != 'ok' ) {
-                    Q.api.err(rsp);
+                    M.api.err(rsp);
                     return false;
                 }
-                Q.qruqsp_qrz_main.license.license_id = rsp.id;
+                M.qruqsp_qrz_main.license.license_id = rsp.id;
                 eval(cb);
             });
         }
     }
     this.license.remove = function() {
         if( confirm('Are you sure you want to remove license?') ) {
-            Q.api.getJSONCb('qruqsp.qrz.licenseDelete', {'station_id':Q.curStationID, 'license_id':this.license_id}, function(rsp) {
+            M.api.getJSONCb('qruqsp.qrz.licenseDelete', {'tnid':M.curTenantID, 'license_id':this.license_id}, function(rsp) {
                 if( rsp.stat != 'ok' ) {
-                    Q.api.err(rsp);
+                    M.api.err(rsp);
                     return false;
                 }
-                Q.qruqsp_qrz_main.license.close();
+                M.qruqsp_qrz_main.license.close();
             });
         }
     }
     this.license.nextButtonFn = function() {
         if( this.nplist != null && this.nplist.indexOf('' + this.license_id) < (this.nplist.length - 1) ) {
-            return 'Q.qruqsp_qrz_main.license.save(\'Q.qruqsp_qrz_main.license.open(null,' + this.nplist[this.nplist.indexOf('' + this.license_id) + 1] + ');\');';
+            return 'M.qruqsp_qrz_main.license.save(\'M.qruqsp_qrz_main.license.open(null,' + this.nplist[this.nplist.indexOf('' + this.license_id) + 1] + ');\');';
         }
         return null;
     }
     this.license.prevButtonFn = function() {
         if( this.nplist != null && this.nplist.indexOf('' + this.license_id) > 0 ) {
-            return 'Q.qruqsp_qrz_main.license.save(\'Q.qruqsp_qrz_main.license.open(null,' + this.nplist[this.nplist.indexOf('' + this.license_id) - 1] + ');\');';
+            return 'M.qruqsp_qrz_main.license.save(\'M.qruqsp_qrz_main.license.open(null,' + this.nplist[this.nplist.indexOf('' + this.license_id) - 1] + ');\');';
         }
         return null;
     }
-    this.license.addButton('save', 'Save', 'Q.qruqsp_qrz_main.license.save();');
+    this.license.addButton('save', 'Save', 'M.qruqsp_qrz_main.license.save();');
     this.license.addClose('Cancel');
     this.license.addButton('next', 'Next');
     this.license.addLeftButton('prev', 'Prev');
@@ -513,7 +513,7 @@ function qruqsp_qrz_main() {
         //
         // Create the app container
         //
-        var ac = Q.createContainer(ap, 'qruqsp_qrz_main', 'yes');
+        var ac = M.createContainer(ap, 'qruqsp_qrz_main', 'yes');
         if( ac == null ) {
             alert('App Error');
             return false;

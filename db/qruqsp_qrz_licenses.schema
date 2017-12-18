@@ -7,7 +7,7 @@
 # ------
 # id:                       The ID assigned to the item.
 # uuid:                     The Universal Unique ID.
-# station_id:               The station the item is attached to.
+# tnid:                     The tenant the item is attached to.
 #
 # name:                     The license class name.
 # permalink:                The permalink for this license.
@@ -20,7 +20,7 @@
 create table qruqsp_qrz_licenses (
     id int not null auto_increment,
     uuid char(36) not null,
-    station_id int not null,
+    tnid int not null,
 
     name varchar(150) not null,
     permalink varchar(150) not null,
@@ -31,5 +31,5 @@ create table qruqsp_qrz_licenses (
     last_updated datetime not null,
     primary key (id),
     unique index (uuid),
-    index sync (station_id, uuid, last_updated)
+    index sync (tnid, uuid, last_updated)
 ) ENGINE='InnoDB', COMMENT='v1.01';

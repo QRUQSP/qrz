@@ -10,17 +10,17 @@
 // ---------
 // api_key:
 // auth_token:
-// station_id:         The ID of the station to get the details for.
+// tnid:               The ID of the tenant to get the details for.
 // note_id:          The ID of the note to get the history for.
 // field:                   The field to get the history for.
 //
-function qruqsp_qrz_noteHistory($q) {
+function qruqsp_qrz_noteHistory($ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'note_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Note'),
         'field'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'field'),
         ));
@@ -30,15 +30,15 @@ function qruqsp_qrz_noteHistory($q) {
     $args = $rc['args'];
 
     //
-    // Check access to station_id as owner, or sys admin
+    // Check access to tnid as owner, or sys admin
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'checkAccess');
-    $rc = qruqsp_qrz_checkAccess($q, $args['station_id'], 'qruqsp.qrz.noteHistory');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'checkAccess');
+    $rc = qruqsp_qrz_checkAccess($ciniki, $args['tnid'], 'qruqsp.qrz.noteHistory');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
 
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbGetModuleHistory');
-    return qruqsp_core_dbGetModuleHistory($q, 'qruqsp.qrz', 'qruqsp_qrz_history', $args['station_id'], 'qruqsp_qrz_notes', $args['note_id'], $args['field']);
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbGetModuleHistory');
+    return ciniki_core_dbGetModuleHistory($ciniki, 'qruqsp.qrz', 'qruqsp_qrz_history', $args['tnid'], 'qruqsp_qrz_notes', $args['note_id'], $args['field']);
 }
 ?>

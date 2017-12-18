@@ -8,16 +8,16 @@
 // ---------
 // api_key:
 // auth_token:
-// station_id:            The ID of the station the license is attached to.
+// tnid:                  The ID of the tenant the license is attached to.
 // license_id:            The ID of the license to be removed.
 //
-function qruqsp_qrz_licenseDelete(&$q) {
+function qruqsp_qrz_licenseDelete(&$ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'license_id'=>array('required'=>'yes', 'blank'=>'yes', 'name'=>'License'),
         ));
     if( $rc['stat'] != 'ok' ) {
@@ -26,10 +26,10 @@ function qruqsp_qrz_licenseDelete(&$q) {
     $args = $rc['args'];
 
     //
-    // Check access to station_id as owner
+    // Check access to tnid as owner
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'checkAccess');
-    $rc = qruqsp_qrz_checkAccess($q, $args['station_id'], 'qruqsp.qrz.licenseDelete');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'checkAccess');
+    $rc = qruqsp_qrz_checkAccess($ciniki, $args['tnid'], 'qruqsp.qrz.licenseDelete');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -39,10 +39,10 @@ function qruqsp_qrz_licenseDelete(&$q) {
     //
     $strsql = "SELECT id, uuid "
         . "FROM qruqsp_qrz_licenses "
-        . "WHERE station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
-        . "AND id = '" . qruqsp_core_dbQuote($q, $args['license_id']) . "' "
+        . "WHERE tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
+        . "AND id = '" . ciniki_core_dbQuote($ciniki, $args['license_id']) . "' "
         . "";
-    $rc = qruqsp_core_dbHashQuery($q, $strsql, 'qruqsp.qrz', 'license');
+    $rc = ciniki_core_dbHashQuery($ciniki, $strsql, 'qruqsp.qrz', 'license');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -58,8 +58,8 @@ function qruqsp_qrz_licenseDelete(&$q) {
     //
     // Check if any modules are currently using this object
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'objectCheckUsed');
-    $rc = qruqsp_core_objectCheckUsed($q, $args['station_id'], 'qruqsp.qrz.license', $args['license_id']);
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'objectCheckUsed');
+    $rc = ciniki_core_objectCheckUsed($ciniki, $args['tnid'], 'qruqsp.qrz.license', $args['license_id']);
     if( $rc['stat'] != 'ok' ) {
         return array('stat'=>'fail', 'err'=>array('code'=>'qruqsp.qrz.16', 'msg'=>'Unable to check if the license is still being used.', 'err'=>$rc['err']));
     }
@@ -70,13 +70,13 @@ function qruqsp_qrz_licenseDelete(&$q) {
     //
     // Start transaction
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionStart');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionRollback');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionCommit');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbDelete');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'objectDelete');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbAddModuleHistory');
-    $rc = qruqsp_core_dbTransactionStart($q, 'qruqsp.qrz');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionStart');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionRollback');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionCommit');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbDelete');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'objectDelete');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbAddModuleHistory');
+    $rc = ciniki_core_dbTransactionStart($ciniki, 'qruqsp.qrz');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -84,27 +84,27 @@ function qruqsp_qrz_licenseDelete(&$q) {
     //
     // Remove the license
     //
-    $rc = qruqsp_core_objectDelete($q, $args['station_id'], 'qruqsp.qrz.license',
+    $rc = ciniki_core_objectDelete($ciniki, $args['tnid'], 'qruqsp.qrz.license',
         $args['license_id'], $license['uuid'], 0x04);
     if( $rc['stat'] != 'ok' ) {
-        qruqsp_core_dbTransactionRollback($q, 'qruqsp.qrz');
+        ciniki_core_dbTransactionRollback($ciniki, 'qruqsp.qrz');
         return $rc;
     }
 
     //
     // Commit the transaction
     //
-    $rc = qruqsp_core_dbTransactionCommit($q, 'qruqsp.qrz');
+    $rc = ciniki_core_dbTransactionCommit($ciniki, 'qruqsp.qrz');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
 
     //
-    // Update the last_change date in the station modules
+    // Update the last_change date in the tenant modules
     // Ignore the result, as we don't want to stop user updates if this fails.
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'updateModuleChangeDate');
-    qruqsp_core_updateModuleChangeDate($q, $args['station_id'], 'qruqsp', 'qrz');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'tenants', 'private', 'updateModuleChangeDate');
+    ciniki_tenants_updateModuleChangeDate($ciniki, $args['tnid'], 'qruqsp', 'qrz');
 
     return array('stat'=>'ok');
 }

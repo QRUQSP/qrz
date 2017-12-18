@@ -7,18 +7,18 @@
 // Arguments
 // ---------
 //
-function qruqsp_qrz_callsignLicensesUpdate(&$q, $station_id, $callsign_id, $licenses) {
+function qruqsp_qrz_callsignLicensesUpdate(&$ciniki, $tnid, $callsign_id, $licenses) {
 
     //
     // Get the existing list of licenses for the callsign
     //
     $strsql = "SELECT id, uuid, license_id "
         . "FROM qruqsp_qrz_callsign_licenses "
-        . "WHERE station_id = '" . qruqsp_core_dbQuote($q, $station_id) . "' "
-        . "AND callsign_id = '" . qruqsp_core_dbQuote($q, $callsign_id) . "' "
+        . "WHERE tnid = '" . ciniki_core_dbQuote($ciniki, $tnid) . "' "
+        . "AND callsign_id = '" . ciniki_core_dbQuote($ciniki, $callsign_id) . "' "
         . "";
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryIDTree');
-    $rc = qruqsp_core_dbHashQueryIDTree($q, $strsql, 'qruqsp.foodmarket', array(
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryIDTree');
+    $rc = ciniki_core_dbHashQueryIDTree($ciniki, $strsql, 'qruqsp.foodmarket', array(
         array('container'=>'licenses', 'fname'=>'license_id', 'fields'=>array('id', 'uuid', 'license_id')),
         ));
     if( $rc['stat'] != 'ok' ) {
@@ -33,10 +33,10 @@ function qruqsp_qrz_callsignLicensesUpdate(&$q, $station_id, $callsign_id, $lice
     //
     // Check for any new licenses that need to be added
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'objectAdd');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'objectAdd');
     foreach($licenses as $license_id) {
         if( !isset($existing_licenses[$license_id]) ) {
-            $rc = qruqsp_core_objectAdd($q, $station_id, 'qruqsp.qrz.callsignlicense', array(
+            $rc = ciniki_core_objectAdd($ciniki, $tnid, 'qruqsp.qrz.callsignlicense', array(
                 'license_id'=>$license_id,
                 'callsign_id'=>$callsign_id,
                 ), 0x04);
@@ -49,10 +49,10 @@ function qruqsp_qrz_callsignLicensesUpdate(&$q, $station_id, $callsign_id, $lice
     //
     // Check for any licenses that need to be removed
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'objectDelete');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'objectDelete');
     foreach($existing_licenses as $license_id => $license) {
         if( !in_array($license_id, $licenses) ) {
-            $rc = qruqsp_core_objectDelete($q, $station_id, 'qruqsp.qrz.callsignlicense', $license['id'], $license['uuid'], 0x04);
+            $rc = ciniki_core_objectDelete($ciniki, $tnid, 'qruqsp.qrz.callsignlicense', $license['id'], $license['uuid'], 0x04);
             if( $rc['stat'] != 'ok' ) {
                 return $rc;
             }

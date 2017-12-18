@@ -7,7 +7,7 @@
 # ------
 # id:                       The ID assigned to the item.
 # uuid:                     The Universal Unique ID.
-# station_id:               The station the item is attached to.
+# tnid:                     The tenant the item is attached to.
 #
 # callsign_id:              The ID of the callsign in the callsigns table.
 #
@@ -26,7 +26,7 @@
 create table qruqsp_qrz_tags (
     id int not null auto_increment,
     uuid char(36) not null,
-    station_id int not null,
+    tnid int not null,
     callsign_id int not null,
     tag_type tinyint unsigned not null,
     tag_name varchar(150) not null,
@@ -35,5 +35,5 @@ create table qruqsp_qrz_tags (
     last_updated datetime not null,
     primary key (id),
     unique index (uuid),
-    index sync (station_id, uuid, last_updated)
+    index sync (tnid, uuid, last_updated)
 ) ENGINE='InnoDB', COMMENT='v1.01';

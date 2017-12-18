@@ -8,16 +8,16 @@
 // ---------
 // api_key:
 // auth_token:
-// station_id:         The ID of the station the note is attached to.
+// tnid:               The ID of the tenant the note is attached to.
 // note_id:          The ID of the note to get the details for.
 //
-function qruqsp_qrz_noteGet($q) {
+function qruqsp_qrz_noteGet($ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'note_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Note'),
         ));
     if( $rc['stat'] != 'ok' ) {
@@ -27,19 +27,19 @@ function qruqsp_qrz_noteGet($q) {
 
     //
     // Make sure this module is activated, and
-    // check permission to run this function for this station
+    // check permission to run this function for this tenant
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'checkAccess');
-    $rc = qruqsp_qrz_checkAccess($q, $args['station_id'], 'qruqsp.qrz.noteGet');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'checkAccess');
+    $rc = qruqsp_qrz_checkAccess($ciniki, $args['tnid'], 'qruqsp.qrz.noteGet');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
 
     //
-    // Load station settings
+    // Load tenant settings
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'intlSettings');
-    $rc = qruqsp_core_intlSettings($q, $args['station_id']);
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'tenants', 'private', 'intlSettings');
+    $rc = ciniki_tenants_intlSettings($ciniki, $args['tnid']);
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -47,10 +47,10 @@ function qruqsp_qrz_noteGet($q) {
     $intl_currency_fmt = numfmt_create($rc['settings']['intl-default-locale'], NumberFormatter::CURRENCY);
     $intl_currency = $rc['settings']['intl-default-currency'];
 
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dateFormat');
-    $date_format = qruqsp_core_dateFormat($q, 'php');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'timeFormat');
-    $time_format = qruqsp_core_timeFormat($q, 'php');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dateFormat');
+    $date_format = ciniki_core_dateFormat($ciniki, 'php');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'timeFormat');
+    $time_format = ciniki_core_timeFormat($ciniki, 'php');
 
     //
     // Return default for new Note
@@ -76,11 +76,11 @@ function qruqsp_qrz_noteGet($q) {
             . "qruqsp_qrz_notes.note_date, "
             . "qruqsp_qrz_notes.note_date AS note_time "
             . "FROM qruqsp_qrz_notes "
-            . "WHERE qruqsp_qrz_notes.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
-            . "AND qruqsp_qrz_notes.id = '" . qruqsp_core_dbQuote($q, $args['note_id']) . "' "
+            . "WHERE qruqsp_qrz_notes.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
+            . "AND qruqsp_qrz_notes.id = '" . ciniki_core_dbQuote($ciniki, $args['note_id']) . "' "
             . "";
-        qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
-        $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.qrz', array(
+        ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryArrayTree');
+        $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'qruqsp.qrz', array(
             array('container'=>'notes', 'fname'=>'id', 
                 'fields'=>array('callsign_id', 'note', 'note_date', 'note_time'),
                 'utctotz'=>array('note_date'=>array('timezone'=>'UTC', 'format'=>$date_format),

@@ -2,21 +2,21 @@
 //
 // Description
 // -----------
-// This method will return the list of Callsigns for a station.
+// This method will return the list of Callsigns for a tenant.
 //
 // Arguments
 // ---------
 // api_key:
 // auth_token:
-// station_id:        The ID of the station to get Callsign for.
+// tnid:              The ID of the tenant to get Callsign for.
 //
-function qruqsp_qrz_callsignList($q) {
+function qruqsp_qrz_callsignList($ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'groups'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Groups'),
         'group_permalink'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Group Permalink'),
         ));
@@ -26,10 +26,10 @@ function qruqsp_qrz_callsignList($q) {
     $args = $rc['args'];
 
     //
-    // Check access to station_id as owner, or sys admin.
+    // Check access to tnid as owner, or sys admin.
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'checkAccess');
-    $rc = qruqsp_qrz_checkAccess($q, $args['station_id'], 'qruqsp.qrz.callsignList');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'checkAccess');
+    $rc = qruqsp_qrz_checkAccess($ciniki, $args['tnid'], 'qruqsp.qrz.callsignList');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -37,8 +37,8 @@ function qruqsp_qrz_callsignList($q) {
     //
     // Load the maps
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'maps');
-    $rc = qruqsp_qrz_maps($q);
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'maps');
+    $rc = qruqsp_qrz_maps($ciniki);
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -74,20 +74,20 @@ function qruqsp_qrz_callsignList($q) {
         $strsql .= "FROM qruqsp_qrz_tags "
             . "LEFT JOIN qruqsp_qrz_callsigns ON ("
                 . "qruqsp_qrz_tags.callsign_id = qruqsp_qrz_callsigns.id "
-                . "AND qruqsp_qrz_callsigns.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+                . "AND qruqsp_qrz_callsigns.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
             . ") "
-            . "WHERE qruqsp_qrz_tags.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+            . "WHERE qruqsp_qrz_tags.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
             . "AND qruqsp_qrz_tags.tag_type = 10 "
-            . "AND qruqsp_qrz_tags.permalink = '" . qruqsp_core_dbQuote($q, $args['group_permalink']) . "' "
+            . "AND qruqsp_qrz_tags.permalink = '" . ciniki_core_dbQuote($ciniki, $args['group_permalink']) . "' "
             . "";
     } else {
         $strsql .= "FROM qruqsp_qrz_callsigns "
-            . "WHERE qruqsp_qrz_callsigns.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+            . "WHERE qruqsp_qrz_callsigns.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
             . "AND qruqsp_qrz_callsigns.status < 60 "
             . "";
     }
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
-    $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.qrz', array(
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryArrayTree');
+    $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'qruqsp.qrz', array(
         array('container'=>'callsigns', 'fname'=>'id', 
             'fields'=>array('id', 'callsign', 'status', 'status_text', 
                 'first', 'middle', 'last', 'fullname', 'nickname', 'shortbio', 
@@ -116,10 +116,10 @@ function qruqsp_qrz_callsignList($q) {
     if( isset($args['groups']) && $args['groups'] == 'yes' ) {
         $strsql = "SELECT DISTINCT tag_name, permalink "
             . "FROM qruqsp_qrz_tags "
-            . "WHERE station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+            . "WHERE tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
             . "ORDER BY tag_name "
             . "";
-        $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.qrz', array(
+        $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'qruqsp.qrz', array(
             array('container'=>'groups', 'fname'=>'permalink', 'fields'=>array('permalink', 'tag_name')),
             ));
         if( $rc['stat'] != 'ok' ) {

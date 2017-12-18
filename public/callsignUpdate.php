@@ -6,13 +6,13 @@
 // Arguments
 // ---------
 //
-function qruqsp_qrz_callsignUpdate(&$q) {
+function qruqsp_qrz_callsignUpdate(&$ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'callsign_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Callsign'),
         'callsign'=>array('required'=>'no', 'blank'=>'no', 'name'=>'Callsign'),
         'status'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Status'),
@@ -50,10 +50,10 @@ function qruqsp_qrz_callsignUpdate(&$q) {
 
     //
     // Make sure this module is activated, and
-    // check permission to run this function for this station
+    // check permission to run this function for this tenant
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'checkAccess');
-    $rc = qruqsp_qrz_checkAccess($q, $args['station_id'], 'qruqsp.qrz.callsignUpdate');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'checkAccess');
+    $rc = qruqsp_qrz_checkAccess($ciniki, $args['tnid'], 'qruqsp.qrz.callsignUpdate');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -61,11 +61,11 @@ function qruqsp_qrz_callsignUpdate(&$q) {
     //
     // Start transaction
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionStart');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionRollback');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionCommit');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbAddModuleHistory');
-    $rc = qruqsp_core_dbTransactionStart($q, 'qruqsp.qrz');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionStart');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionRollback');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionCommit');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbAddModuleHistory');
+    $rc = ciniki_core_dbTransactionStart($ciniki, 'qruqsp.qrz');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -73,10 +73,10 @@ function qruqsp_qrz_callsignUpdate(&$q) {
     //
     // Update the Callsign in the database
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'objectUpdate');
-    $rc = qruqsp_core_objectUpdate($q, $args['station_id'], 'qruqsp.qrz.callsign', $args['callsign_id'], $args, 0x04);
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'objectUpdate');
+    $rc = ciniki_core_objectUpdate($ciniki, $args['tnid'], 'qruqsp.qrz.callsign', $args['callsign_id'], $args, 0x04);
     if( $rc['stat'] != 'ok' ) {
-        qruqsp_core_dbTransactionRollback($q, 'qruqsp.qrz');
+        ciniki_core_dbTransactionRollback($ciniki, 'qruqsp.qrz');
         return $rc;
     }
 
@@ -84,10 +84,10 @@ function qruqsp_qrz_callsignUpdate(&$q) {
     // Update the licenses for a callsign
     //
     if( isset($args['licenses']) ) {
-        qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'callsignLicensesUpdate');
-        $rc = qruqsp_qrz_callsignLicensesUpdate($q, $args['station_id'], $args['callsign_id'], $args['licenses']);
+        ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'callsignLicensesUpdate');
+        $rc = qruqsp_qrz_callsignLicensesUpdate($ciniki, $args['tnid'], $args['callsign_id'], $args['licenses']);
         if( $rc['stat'] != 'ok' ) {
-            qruqsp_core_dbTransactionRollback($q, 'qruqsp.qrz');
+            ciniki_core_dbTransactionRollback($ciniki, 'qruqsp.qrz');
             return $rc;
         }
     }
@@ -96,36 +96,36 @@ function qruqsp_qrz_callsignUpdate(&$q) {
     // Update the groups
     //
     if( isset($args['groups']) ) {
-        qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'tagsUpdate');
-        $rc = qruqsp_core_tagsUpdate($q, 'qruqsp.qrz.tag', $args['station_id'], 'callsign_id', $args['callsign_id'], 10, $args['groups']);
+        ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'tagsUpdate');
+        $rc = ciniki_core_tagsUpdate($ciniki, 'qruqsp.qrz', 'tag', $args['tnid'], 'qruqsp_qrz_tags', 'qruqsp_qrz_history', 'callsign_id', $args['callsign_id'], 10, $args['groups']);
         if( $rc['stat'] != 'ok' ) {
-            qruqsp_core_dbTransactionRollback($q, 'qruqsp.qrz');
+            ciniki_core_dbTransactionRollback($ciniki, 'qruqsp.qrz');
             return $rc;
         }
-        qruqsp_core_dbAddModuleHistory($q, 'qruqsp.qrz', 'qruqsp_qrz_history', $args['station_id'],
+        ciniki_core_dbAddModuleHistory($ciniki, 'qruqsp.qrz', 'qruqsp_qrz_history', $args['tnid'],
             2, 'qruqsp_qrz_callsigns', $args['callsign_id'], 'groups', implode('::', $args['groups']));
     }
 
     //
     // Commit the transaction
     //
-    $rc = qruqsp_core_dbTransactionCommit($q, 'qruqsp.qrz');
+    $rc = ciniki_core_dbTransactionCommit($ciniki, 'qruqsp.qrz');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
 
     //
-    // Update the last_change date in the station modules
+    // Update the last_change date in the tenant modules
     // Ignore the result, as we don't want to stop user updates if this fails.
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'updateModuleChangeDate');
-    qruqsp_core_updateModuleChangeDate($q, $args['station_id'], 'qruqsp', 'qrz');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'tenants', 'private', 'updateModuleChangeDate');
+    ciniki_tenants_updateModuleChangeDate($ciniki, $args['tnid'], 'qruqsp', 'qrz');
 
     //
     // Update the web index if enabled
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'hookExec');
-    qruqsp_core_hookExec($q, $args['station_id'], 'qruqsp', 'web', 'indexObject', array('object'=>'qruqsp.qrz.callsign', 'object_id'=>$args['callsign_id']));
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'hookExec');
+    ciniki_core_hookExec($ciniki, $args['tnid'], 'qruqsp', 'web', 'indexObject', array('object'=>'qruqsp.qrz.callsign', 'object_id'=>$args['callsign_id']));
 
     return array('stat'=>'ok');
 }

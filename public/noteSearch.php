@@ -2,23 +2,23 @@
 //
 // Description
 // -----------
-// This method searchs for a Notes for a station.
+// This method searchs for a Notes for a tenant.
 //
 // Arguments
 // ---------
 // api_key:
 // auth_token:
-// station_id:         The ID of the station to get Note for.
+// tnid:               The ID of the tenant to get Note for.
 // start_needle:       The search string to search for.
 // limit:              The maximum number of entries to return.
 //
-function qruqsp_qrz_noteSearch($q) {
+function qruqsp_qrz_noteSearch($ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'start_needle'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Search String'),
         'limit'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Limit'),
         ));
@@ -28,10 +28,10 @@ function qruqsp_qrz_noteSearch($q) {
     $args = $rc['args'];
 
     //
-    // Check access to station_id as owner, or sys admin.
+    // Check access to tnid as owner, or sys admin.
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'checkAccess');
-    $rc = qruqsp_qrz_checkAccess($q, $args['station_id'], 'qruqsp.qrz.noteSearch');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'checkAccess');
+    $rc = qruqsp_qrz_checkAccess($ciniki, $args['tnid'], 'qruqsp.qrz.noteSearch');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -43,19 +43,19 @@ function qruqsp_qrz_noteSearch($q) {
         . "qruqsp_qrz_notes.callsign_id, "
         . "qruqsp_qrz_notes.note_date "
         . "FROM qruqsp_qrz_notes "
-        . "WHERE qruqsp_qrz_notes.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+        . "WHERE qruqsp_qrz_notes.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
         . "AND ("
-            . "name LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR name LIKE '% " . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
+            . "name LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR name LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
         . ") "
         . "";
     if( isset($args['limit']) && is_numeric($args['limit']) && $args['limit'] > 0 ) {
-        $strsql .= "LIMIT " . qruqsp_core_dbQuote($q, $args['limit']) . " ";
+        $strsql .= "LIMIT " . ciniki_core_dbQuote($ciniki, $args['limit']) . " ";
     } else {
         $strsql .= "LIMIT 25 ";
     }
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
-    $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.qrz', array(
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryArrayTree');
+    $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'qruqsp.qrz', array(
         array('container'=>'notes', 'fname'=>'id', 
             'fields'=>array('id', 'callsign_id', 'note_date')),
         ));

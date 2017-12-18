@@ -8,16 +8,16 @@
 // ---------
 // api_key:
 // auth_token:
-// station_id:         The ID of the station the license is attached to.
+// tnid:               The ID of the tenant the license is attached to.
 // license_id:          The ID of the license to get the details for.
 //
-function qruqsp_qrz_licenseGet($q) {
+function qruqsp_qrz_licenseGet($ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'license_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'License'),
         ));
     if( $rc['stat'] != 'ok' ) {
@@ -27,19 +27,19 @@ function qruqsp_qrz_licenseGet($q) {
 
     //
     // Make sure this module is activated, and
-    // check permission to run this function for this station
+    // check permission to run this function for this tenant
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'checkAccess');
-    $rc = qruqsp_qrz_checkAccess($q, $args['station_id'], 'qruqsp.qrz.licenseGet');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'checkAccess');
+    $rc = qruqsp_qrz_checkAccess($ciniki, $args['tnid'], 'qruqsp.qrz.licenseGet');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
 
     //
-    // Load station settings
+    // Load tenant settings
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'intlSettings');
-    $rc = qruqsp_core_intlSettings($q, $args['station_id']);
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'tenants', 'private', 'intlSettings');
+    $rc = ciniki_tenants_intlSettings($ciniki, $args['tnid']);
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -47,8 +47,8 @@ function qruqsp_qrz_licenseGet($q) {
     $intl_currency_fmt = numfmt_create($rc['settings']['intl-default-locale'], NumberFormatter::CURRENCY);
     $intl_currency = $rc['settings']['intl-default-currency'];
 
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dateFormat');
-    $date_format = qruqsp_core_dateFormat($q, 'php');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'users', 'private', 'dateFormat');
+    $date_format = ciniki_users_dateFormat($ciniki, 'php');
 
     //
     // Return default for new License
@@ -70,11 +70,11 @@ function qruqsp_qrz_licenseGet($q) {
             . "qruqsp_qrz_licenses.permalink, "
             . "qruqsp_qrz_licenses.notes "
             . "FROM qruqsp_qrz_licenses "
-            . "WHERE qruqsp_qrz_licenses.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
-            . "AND qruqsp_qrz_licenses.id = '" . qruqsp_core_dbQuote($q, $args['license_id']) . "' "
+            . "WHERE qruqsp_qrz_licenses.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
+            . "AND qruqsp_qrz_licenses.id = '" . ciniki_core_dbQuote($ciniki, $args['license_id']) . "' "
             . "";
-        qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
-        $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.qrz', array(
+        ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryArrayTree');
+        $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'qruqsp.qrz', array(
             array('container'=>'licenses', 'fname'=>'id', 
                 'fields'=>array('name', 'permalink', 'notes'),
                 ),

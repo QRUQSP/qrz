@@ -6,13 +6,13 @@
 // Arguments
 // ---------
 //
-function qruqsp_qrz_licenseUpdate(&$q) {
+function qruqsp_qrz_licenseUpdate(&$ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'license_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'License'),
         'name'=>array('required'=>'no', 'blank'=>'no', 'name'=>'License name'),
         'permalink'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'License name'),
@@ -25,27 +25,27 @@ function qruqsp_qrz_licenseUpdate(&$q) {
 
     //
     // Make sure this module is activated, and
-    // check permission to run this function for this station
+    // check permission to run this function for this tenant
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'qrz', 'private', 'checkAccess');
-    $rc = qruqsp_qrz_checkAccess($q, $args['station_id'], 'qruqsp.qrz.licenseUpdate');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'qrz', 'private', 'checkAccess');
+    $rc = qruqsp_qrz_checkAccess($ciniki, $args['tnid'], 'qruqsp.qrz.licenseUpdate');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
 
     if( isset($args['name']) ) {
-        qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'makePermalink');
-        $args['permalink'] = qruqsp_core_makePermalink($q, $args['name']);
+        ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'makePermalink');
+        $args['permalink'] = ciniki_core_makePermalink($ciniki, $args['name']);
         //
         // Make sure the permalink is unique
         //
         $strsql = "SELECT id, name, permalink "
             . "FROM qruqsp_qrz_licenses "
-            . "WHERE station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
-            . "AND permalink = '" . qruqsp_core_dbQuote($q, $args['permalink']) . "' "
-            . "AND id <> '" . qruqsp_core_dbQuote($q, $args['license_id']) . "' "
+            . "WHERE tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
+            . "AND permalink = '" . ciniki_core_dbQuote($ciniki, $args['permalink']) . "' "
+            . "AND id <> '" . ciniki_core_dbQuote($ciniki, $args['license_id']) . "' "
             . "";
-        $rc = qruqsp_core_dbHashQuery($q, $strsql, 'qruqsp.qrz', 'item');
+        $rc = ciniki_core_dbHashQuery($ciniki, $strsql, 'qruqsp.qrz', 'item');
         if( $rc['stat'] != 'ok' ) {
             return $rc;
         }
@@ -57,11 +57,11 @@ function qruqsp_qrz_licenseUpdate(&$q) {
     //
     // Start transaction
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionStart');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionRollback');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionCommit');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbAddModuleHistory');
-    $rc = qruqsp_core_dbTransactionStart($q, 'qruqsp.qrz');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionStart');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionRollback');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionCommit');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbAddModuleHistory');
+    $rc = ciniki_core_dbTransactionStart($ciniki, 'qruqsp.qrz');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -69,33 +69,33 @@ function qruqsp_qrz_licenseUpdate(&$q) {
     //
     // Update the License in the database
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'objectUpdate');
-    $rc = qruqsp_core_objectUpdate($q, $args['station_id'], 'qruqsp.qrz.license', $args['license_id'], $args, 0x04);
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'objectUpdate');
+    $rc = ciniki_core_objectUpdate($ciniki, $args['tnid'], 'qruqsp.qrz.license', $args['license_id'], $args, 0x04);
     if( $rc['stat'] != 'ok' ) {
-        qruqsp_core_dbTransactionRollback($q, 'qruqsp.qrz');
+        ciniki_core_dbTransactionRollback($ciniki, 'qruqsp.qrz');
         return $rc;
     }
 
     //
     // Commit the transaction
     //
-    $rc = qruqsp_core_dbTransactionCommit($q, 'qruqsp.qrz');
+    $rc = ciniki_core_dbTransactionCommit($ciniki, 'qruqsp.qrz');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
 
     //
-    // Update the last_change date in the station modules
+    // Update the last_change date in the tenant modules
     // Ignore the result, as we don't want to stop user updates if this fails.
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'updateModuleChangeDate');
-    qruqsp_core_updateModuleChangeDate($q, $args['station_id'], 'qruqsp', 'qrz');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'tenants', 'private', 'updateModuleChangeDate');
+    ciniki_tenants_updateModuleChangeDate($ciniki, $args['tnid'], 'qruqsp', 'qrz');
 
     //
     // Update the web index if enabled
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'hookExec');
-    qruqsp_core_hookExec($q, $args['station_id'], 'qruqsp', 'web', 'indexObject', array('object'=>'qruqsp.qrz.license', 'object_id'=>$args['license_id']));
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'hookExec');
+    ciniki_core_hookExec($ciniki, $args['tnid'], 'qruqsp', 'web', 'indexObject', array('object'=>'qruqsp.qrz.license', 'object_id'=>$args['license_id']));
 
     return array('stat'=>'ok');
 }
