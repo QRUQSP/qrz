@@ -47,10 +47,10 @@ function qruqsp_qrz_noteGet($ciniki) {
     $intl_currency_fmt = numfmt_create($rc['settings']['intl-default-locale'], NumberFormatter::CURRENCY);
     $intl_currency = $rc['settings']['intl-default-currency'];
 
-    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dateFormat');
-    $date_format = ciniki_core_dateFormat($ciniki, 'php');
-    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'timeFormat');
-    $time_format = ciniki_core_timeFormat($ciniki, 'php');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'users', 'private', 'dateFormat');
+    $date_format = ciniki_users_dateFormat($ciniki, 'php');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'users', 'private', 'timeFormat');
+    $time_format = ciniki_users_timeFormat($ciniki, 'php');
 
     //
     // Return default for new Note
