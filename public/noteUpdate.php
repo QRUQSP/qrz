@@ -54,8 +54,6 @@ function qruqsp_qrz_noteUpdate(&$ciniki) {
         $args['note_date'] = $note['note_date'] . ' ' . $args['note_time'];
     }
 
-    error_log(print_r($args, true));
-
     //
     // Start transaction
     //
