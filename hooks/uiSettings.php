@@ -27,6 +27,7 @@ function qruqsp_qrz_hooks_uiSettings(&$ciniki, $tnid, $args) {
         $menu_item = array(
             'priority'=>5000,
             'label'=>'QRZ',
+            'helpcontent'=>'Lookup callsigns.',
             'edit'=>array('app'=>'qruqsp.qrz.main'),
             );
         $rsp['menu_items'][] = $menu_item;
