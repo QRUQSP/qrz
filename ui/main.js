@@ -278,15 +278,15 @@ function qruqsp_qrz_main() {
         }
     }
     this.edit.remove = function() {
-        if( confirm('Are you sure you want to remove callsign?') ) {
-            M.api.getJSONCb('qruqsp.qrz.callsignDelete', {'tnid':M.curTenantID, 'callsign_id':this.callsign_id}, function(rsp) {
+        M.confirm('Are you sure you want to remove callsign?',null,function() {
+            M.api.getJSONCb('qruqsp.qrz.callsignDelete', {'tnid':M.curTenantID, 'callsign_id':M.qruqsp_qrz_main.edit.callsign_id}, function(rsp) {
                 if( rsp.stat != 'ok' ) {
                     M.api.err(rsp);
                     return false;
                 }
                 M.qruqsp_qrz_main.edit.close();
             });
-        }
+        });
     }
     this.edit.nextButtonFn = function() {
         if( this.nplist != null && this.nplist.indexOf('' + this.callsign_id) < (this.nplist.length - 1) ) {
@@ -376,15 +376,15 @@ function qruqsp_qrz_main() {
         }
     }
     this.note.remove = function() {
-        if( confirm('Are you sure you want to remove note?') ) {
-            M.api.getJSONCb('qruqsp.qrz.noteDelete', {'tnid':M.curTenantID, 'note_id':this.note_id}, function(rsp) {
+        M.confirm('Are you sure you want to remove note?',null,function() {
+            M.api.getJSONCb('qruqsp.qrz.noteDelete', {'tnid':M.curTenantID, 'note_id':M.qruqsp_qrz_main.note.note_id}, function(rsp) {
                 if( rsp.stat != 'ok' ) {
                     M.api.err(rsp);
                     return false;
                 }
                 M.qruqsp_qrz_main.note.close();
             });
-        }
+        });
     }
     this.note.nextButtonFn = function() {
         if( this.nplist != null && this.nplist.indexOf('' + this.note_id) < (this.nplist.length - 1) ) {
@@ -471,15 +471,15 @@ function qruqsp_qrz_main() {
         }
     }
     this.license.remove = function() {
-        if( confirm('Are you sure you want to remove license?') ) {
-            M.api.getJSONCb('qruqsp.qrz.licenseDelete', {'tnid':M.curTenantID, 'license_id':this.license_id}, function(rsp) {
+        M.confirm('Are you sure you want to remove license?',null,function() {
+            M.api.getJSONCb('qruqsp.qrz.licenseDelete', {'tnid':M.curTenantID, 'license_id':M.qruqsp_qrz_main.license.license_id}, function(rsp) {
                 if( rsp.stat != 'ok' ) {
                     M.api.err(rsp);
                     return false;
                 }
                 M.qruqsp_qrz_main.license.close();
             });
-        }
+        });
     }
     this.license.nextButtonFn = function() {
         if( this.nplist != null && this.nplist.indexOf('' + this.license_id) < (this.nplist.length - 1) ) {
@@ -515,7 +515,7 @@ function qruqsp_qrz_main() {
         //
         var ac = M.createContainer(ap, 'qruqsp_qrz_main', 'yes');
         if( ac == null ) {
-            alert('App Error');
+            M.alert('App Error');
             return false;
         }
         
